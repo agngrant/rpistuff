@@ -1,0 +1,33 @@
+ls
+sudo apt-get update
+sudo apt-get install build-essential python-dev python-smbus python-imaging git
+sudo apt-get install i2c-tools
+sudo raspi-config
+sudo i2cdetect -y 1
+sudo i2cdetect -y 0
+sudo nano /etc/modules
+try and avoid: sudo nano /etc/modprobe.d/raspi-blacklist.conf
+ls /etc/modprobe.d/
+try and avoid: sudo nano /etc/modprobe.d/raspi-blacklist.conf
+sudo nano /boot/config.txt
+sudo reboot
+sudo i2cdetect -y 1
+may need: sudo nano /boot/config.txt
+sudo reboot
+sudo i2cdetect -y 1
+sudo i2cdetect -y 0
+sudo apt-get update
+sudo apt-get upgrade
+
+git clone http://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
+cd Adafruit-Raspberry-Pi-Python-Code/
+ls
+sudo apt-get install python-dev
+do this first: sudo apt-get install python-rpi.gpio
+use this: sudo raspi-config
+cd /dev/
+ls
+sudo i2cdetect -y 1
+sudo i2cdetect -y 0
+sudo halt
+
