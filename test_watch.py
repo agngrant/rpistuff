@@ -16,17 +16,23 @@ class LoadThread(threading.Thread):
         super(LoadThread,self).__init__()
         self.stopcond = False
         self.display = matrixdisplay
-        self.image = Image.new('1',(8,8))
+        self.images = {0:Image.new('1',(8,8)),1:Image.new('1',(8,8))}
+        self.current = 0;
     
 
     """ Create Idle Image """
     def createImage(self):
-        draw = ImageDraw.Draw(self.image)
+        draw = ImageDraw.Draw(self.images[self.current])
         draw.rectangle((0,0,7,7),outline=255, fill=0)
         draw.line((2,2,5,2),fill=255)
         draw.line((2,5,5,5),fill=255)
         draw.rectangle((3,3,4,4),fill=255)
-
+        self.current = not self.current
+        draw = ImageDraw.Draw(self.images[self.current])
+        draw.rectangle((0,0,7,7),outline=255, fill=0)
+        draw.line((2,2,2,5),fill=255)
+        draw.line((5,2,5,5),fill=255)
+        draw.rectangle((3,3,4,4),fill=255)
 
     """ Run method which loops until the stopcondition
         is set. It will read the average load of the system
@@ -56,7 +62,8 @@ class LoadThread(threading.Thread):
 	    display.write_display()
         else:
             display.clear()
-            display.set_image(self.image)
+            display.set_image(self.images[self.current])
+            self.current = not self.current
             display.write_display()
 
             
