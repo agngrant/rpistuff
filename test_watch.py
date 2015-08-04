@@ -10,6 +10,7 @@ from Adafruit_LED_Backpack import Matrix8x8
 The class will read the average load and write it to
 std out and to an 8x8 matrix display. """
 class LoadThread(threading.Thread):
+  
     """ Init takes in the default stopcondition and 
         the target display matrix """
     def __init__(self, stopcond, matrixdisplay):
@@ -18,6 +19,7 @@ class LoadThread(threading.Thread):
         self.display = matrixdisplay
         self.images = {0:Image.new('1',(8,8)),1:Image.new('1',(8,8))}
         self.current = 0;
+
     
 
     """ Create Idle Image """
@@ -50,21 +52,21 @@ class LoadThread(threading.Thread):
         fit on a 8x8 matrix which will fill in rows until full. """
     def writeMinute(self,averageLoad):
         loadVal = int(round(averageLoad * 16.0))
-        print loadVal
+        #print loadVal
         if loadVal > 0:
-            display.clear()
+            self.display.clear()
             current = 1;
             for x in range(8):
                 for y in range(7,-1,-1):
                     if current <= loadVal:
-                        display.set_pixel(x,y,1)
+                        self.display.set_pixel(x,y,1)
                     current = current + 1
-	    display.write_display()
+	    self.display.write_display()
         else:
-            display.clear()
-            display.set_image(self.images[self.current])
+            self.display.clear()
+            self.display.set_image(self.images[self.current])
             self.current = not self.current
-            display.write_display()
+            self.display.write_display()
 
             
 
@@ -72,21 +74,23 @@ class LoadThread(threading.Thread):
     """ Called to stop the thread by setting stopcond to true."""
     def stopthread(self):
         self.stopcond = True
+
     
 
+     
 if __name__ == "__main__":
     #Initialise Display and thread.
-    display = Matrix8x8.Matrix8x8()
-    display.clear()
-    display.write_display()
-    thread_watch = LoadThread(False, display) 
+    displays = Matrix8x8.Matrix8x8()
+    displays.clear()
+    displays.write_display()
+    thread_watch = LoadThread(False, displays)
     thread_watch.start()
     try: #Loop until keyboard interrupt
        while True:
            time.sleep(1)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt,SystemExit):
        thread_watch.stopthread()
     thread_watch.join()
     #Clear display
-    display.clear()
-    display.write_display()
+    displays.clear()
+    displays.write_display()

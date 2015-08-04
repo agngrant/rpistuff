@@ -31,3 +31,6 @@ sudo i2cdetect -y 1
 sudo i2cdetect -y 0
 sudo halt
 
+git clone https://github.com/agngrant/rpistuff.git
+sudo crontab -e
+add in: @reboot sh /home/pi/rpistuff/run_led.sh >/home/pi/logs/cronlog 2>&1
