@@ -81,6 +81,7 @@ class LoadThread(threading.Thread):
 if __name__ == "__main__":
     #Initialise Display and thread.
     displays = Matrix8x8.Matrix8x8()
+    displays.begin()
     displays.clear()
     displays.write_display()
     thread_watch = LoadThread(False, displays)
