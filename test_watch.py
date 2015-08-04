@@ -16,14 +16,27 @@ class LoadThread(threading.Thread):
         super(LoadThread,self).__init__()
         self.stopcond = False
         self.display = matrixdisplay
+        self.image = Image.new('1',(8,8))
     
+
+    """ Create Idle Image """
+    def createImage(self):
+        draw = ImageDraw.Draw(self.image)
+        draw.rectangle((0,0,7,7),outline=255, fill=0)
+        draw.line((2,2,5,2),fill=255)
+        draw.line((2,5,5,5),fill=255)
+        draw.rectangle((3,3,4,4),fill=255)
+
+
     """ Run method which loops until the stopcondition
         is set. It will read the average load of the system
         and call writeMinute to write out information."""
+
     def run(self):
+        self.createImage()
         while not self.stopcond:
 	    av1, av2, av3 = os.getloadavg()
-            print " Load average: %.2f %.2f %.2f " % (av1, av2, av3)
+            #print " Load average: %.2f %.2f %.2f " % (av1, av2, av3)
             self.writeMinute(av1)
             time.sleep(1)
 
@@ -32,14 +45,22 @@ class LoadThread(threading.Thread):
     def writeMinute(self,averageLoad):
         loadVal = int(round(averageLoad * 16.0))
         print loadVal
-        display.clear()
-        current = 1;
-        for x in range(8):
-            for y in range(8):
-                if current <= loadVal:
-                    display.set_pixel(x,y,1)
-                current = current + 1
-	display.write_display()
+        if loadVal > 0:
+            display.clear()
+            current = 1;
+            for x in range(8):
+                for y in range(7,-1,-1):
+                    if current <= loadVal:
+                        display.set_pixel(x,y,1)
+                    current = current + 1
+	    display.write_display()
+        else:
+            display.clear()
+            display.set_image(self.image)
+            display.write_display()
+
+            
+
 
     """ Called to stop the thread by setting stopcond to true."""
     def stopthread(self):
