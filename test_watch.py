@@ -25,16 +25,16 @@ class LoadThread(threading.Thread):
     """ Create Idle Image """
     def createImage(self):
         draw = ImageDraw.Draw(self.images[self.current])
-        draw.rectangle((0,0,7,7),outline=255, fill=0)
-        draw.line((2,2,5,2),fill=255)
-        draw.line((2,5,5,5),fill=255)
-        draw.rectangle((3,3,4,4),fill=255)
+        #draw.rectangle((0,0,7,7),outline=255, fill=0)
+        draw.line((1,1,6,1),fill=255)
+        draw.line((1,6,6,6),fill=255)
+        draw.rectangle((3,2,4,5),fill=255)
         self.current = not self.current
         draw = ImageDraw.Draw(self.images[self.current])
-        draw.rectangle((0,0,7,7),outline=255, fill=0)
-        draw.line((2,2,2,5),fill=255)
-        draw.line((5,2,5,5),fill=255)
-        draw.rectangle((3,3,4,4),fill=255)
+        #draw.rectangle((0,0,7,7),outline=255, fill=0)
+        draw.line((1,1,1,6),fill=255)
+        draw.line((6,1,6,6),fill=255)
+        draw.rectangle((2,3,5,4),fill=255)
 
     """ Run method which loops until the stopcondition
         is set. It will read the average load of the system
