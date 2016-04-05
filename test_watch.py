@@ -4,6 +4,7 @@ import time
 import threading
 import Image
 import ImageDraw
+import psutil
 from Adafruit_LED_Backpack import Matrix8x8
 
 """ This class uses threading.Thread to inherit from.
@@ -19,6 +20,7 @@ class LoadThread(threading.Thread):
         self.display = matrixdisplay
         self.images = {0:Image.new('1',(8,8)),1:Image.new('1',(8,8))}
         self.current = 0;
+        self.metric = 0
 
     
 
@@ -40,13 +42,59 @@ class LoadThread(threading.Thread):
         is set. It will read the average load of the system
         and call writeMinute to write out information."""
 
+    def updateMetric(self):
+        print os.path.exists("metric.txt")
+        if os.path.exists("metric.txt"):
+           file=open("metric.txt")
+           temp = int(file.read())
+           self.metric = temp
+           print self.metric
+           file.close()
+          
     def run(self):
         self.createImage()
+        loop = 1;
         while not self.stopcond:
-	    av1, av2, av3 = os.getloadavg()
+            print loop
+            if loop % 20 == 0: 
+                self.updateMetric()
+                loop = 0
+	    #av1, av2, av3 = os.getloadavg()
+            if self.metric == 0:
+                cpupercent = psutil.cpu_percent(interval=1,percpu=True)
+                self.writeCpus(cpupercent)
+            if self.metric == 1:
+                av1, av2, av3 = os.getloadavg()
+                self.writeMinute(av1)
+                time.sleep(1)
             #print " Load average: %.2f %.2f %.2f " % (av1, av2, av3)
-            self.writeMinute(av1)
-            time.sleep(1)
+            loop = loop + 1
+            #time.sleep(1)
+
+    """ This will take an float average load value and scale it to 
+        fit on a 8x8 matrix which will fill in rows until full. """
+    def writeCpus(self,cpupercent):
+        
+        cpus = len(cpupercent)
+        width = 8/cpus
+        perVal = [int(round(x*8.0/100.0)) for x in cpupercent]
+        #print loadVal
+        self.display.clear()
+        bars = Image.new('1',(8,8))
+        draw = ImageDraw.Draw(bars)
+        #print cpupercent
+        #print perVal
+        for cpu in range(cpus):
+             draw = ImageDraw.Draw(bars)
+             if perVal[cpu] > 0:
+                draw.line((0+(width*cpu),7,0+(width*cpu),8-perVal[cpu]),fill=255)
+                draw.line((1+(width*cpu),7,1+(width*cpu),8-perVal[cpu]),fill=255)
+             else:
+                draw.line((0+(width*cpu),7,0+(width*cpu),8-perVal[cpu]),fill=0)
+                draw.line((1+(width*cpu),7,1+(width*cpu),8-perVal[cpu]),fill=0)
+        self.display.set_image(bars)
+        self.display.write_display()
+
 
     """ This will take an float average load value and scale it to 
         fit on a 8x8 matrix which will fill in rows until full. """
@@ -95,3 +143,4 @@ if __name__ == "__main__":
     #Clear display
     displays.clear()
     displays.write_display()
+
