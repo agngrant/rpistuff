@@ -55,7 +55,7 @@ class LoadThread(threading.Thread):
         self.createImage()
         loop = 1;
         while not self.stopcond:
-            print loop
+            #print loop
             if loop % 20 == 0: 
                 self.updateMetric()
                 loop = 0
