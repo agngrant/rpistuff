@@ -48,7 +48,7 @@ class LoadThread(threading.Thread):
            file=open("metric.txt")
            temp = int(file.read())
            self.metric = temp
-           print self.metric
+           #print self.metric
            file.close()
           
     def run(self):
