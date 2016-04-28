@@ -5,7 +5,9 @@ import threading
 import Image
 import ImageDraw
 import psutil
+import subprocess
 from Adafruit_LED_Backpack import Matrix8x8
+from collections import deque
 
 """ This class uses threading.Thread to inherit from.
 The class will read the average load and write it to
@@ -21,7 +23,9 @@ class LoadThread(threading.Thread):
         self.images = {0:Image.new('1',(8,8)),1:Image.new('1',(8,8))}
         self.current = 0;
         self.metric = 0
-
+        self.temp = deque(8*[0])
+        self.mintemp = 0
+        self.maxtemp = 85
     
 
     """ Create Idle Image """
@@ -48,11 +52,12 @@ class LoadThread(threading.Thread):
            file=open("metric.txt")
            temp = int(file.read())
            self.metric = temp
-           #print self.metric
+           print self.metric
            file.close()
           
     def run(self):
         self.createImage()
+        self.updateMetric()
         loop = 1;
         while not self.stopcond:
             #print loop
@@ -66,6 +71,11 @@ class LoadThread(threading.Thread):
             if self.metric == 1:
                 av1, av2, av3 = os.getloadavg()
                 self.writeMinute(av1)
+                time.sleep(1)
+            if self.metric == 2:
+                self.temp.popleft()
+                self.temp.append(self.get_temperature())
+                self.writeline(self.temp, self.mintemp, self.maxtemp)
                 time.sleep(1)
             #print " Load average: %.2f %.2f %.2f " % (av1, av2, av3)
             loop = loop + 1
@@ -95,6 +105,26 @@ class LoadThread(threading.Thread):
         self.display.set_image(bars)
         self.display.write_display()
 
+
+    def writeline(self,linevalues,minscalevalue,maxscalevalue):
+        points = len(linevalues)
+        perVal = [int(round(x*8.0/(maxscalevalue-minscalevalue))) for x in linevalues]
+        self.display.clear()
+        bars = Image.new('1',(8,8))
+        draw = ImageDraw.Draw(bars)
+        for point in range(points):
+            draw = ImageDraw.Draw(bars)
+            draw.point([point,8-perVal[point]],fill=255)
+        self.display.set_image(bars)
+        self.display.write_display()
+
+
+    def get_temperature(self):
+        try:
+            s = subprocess.check_output(['/opt/vc/bin/vcgencmd','measure_temp'])
+            return float(s.split('=')[1][:-3])
+        except Exception as inst:
+            return 0
 
     """ This will take an float average load value and scale it to 
         fit on a 8x8 matrix which will fill in rows until full. """
