@@ -69,12 +69,10 @@ class LoadThread(threading.Thread):
         draw.rectangle((2, 3, 5, 4), fill=255)
 
     def updateMetric(self):
-        print os.path.exists("metric.txt")
         if os.path.exists("metric.txt"):
             file = open("metric.txt")
             temp = int(file.read())
             self.metric = temp
-            print self.metric
             file.close()
 
     def run(self):
