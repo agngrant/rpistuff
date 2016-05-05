@@ -153,9 +153,9 @@ class LoadThread(threading.Thread):
         bars = Image.new('1', (8, 8))
         draw = ImageDraw.Draw(bars)
         if displayin > 0:
-            draw.rectangle([0,7,3,8-displayin],fill=255)
+            draw.rectangle([0,7,2,8-displayin],fill=255)
         if displayout > 0:
-            draw.rectangle([4,7,7,8-displayout],fill=255)
+            draw.rectangle([5,7,7,8-displayout],fill=255)
         self.display.set_image(bars)
         self.display.write_display()
 
