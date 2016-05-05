@@ -144,8 +144,8 @@ class LoadThread(threading.Thread):
     def writeNetwork(self, network):
         packetout = network['eth0'][0]
         packetin = network['eth0'][1]
-        displayin = int((packetin - self.priorin) * 8.0/1000.0)
-        displayout = int((packetout - self.priorout) * 8.0/1000.0)
+        displayin = int((packetin - self.priorin) * 8.0/10000.0)
+        displayout = int((packetout - self.priorout) * 8.0/10000.0)
         #print "%s %s %s %s %s %s" % (packetin, packetout, displayin, displayout, self.priorin, self.priorout)
         self.priorin = packetin
         self.priorout = packetout
