@@ -53,6 +53,8 @@ class LoadThread(threading.Thread):
         self.cpu = deque(8 * [0])
         self.mincpu = 0
         self.maxcpu = 100
+        self.priorout = 0
+        self.priorin = 0
 
     def createImage(self):
         """ Create Idle Image """
@@ -105,6 +107,10 @@ class LoadThread(threading.Thread):
                 self.cpu.append(psutil.cpu_percent(percpu=False))
                 self.writeline(self.cpu, self.mincpu, self.maxcpu)
                 time.sleep(1)
+            if self.metric == 4: 
+                network = psutil.net_io_counters(pernic=True)
+                self.writeNetwork(network)
+                time.sleep(1)
             # print " Load average: %.2f %.2f %.2f " % (av1, av2, av3)
             loop = loop + 1
             # time.sleep(1)
@@ -134,6 +140,20 @@ class LoadThread(threading.Thread):
                            7, 1 + (width * cpu), 8 - perVal[cpu]), fill=0)
         self.display.set_image(bars)
         self.display.write_display()
+
+    def writeNetwork(self, network):
+        packetout = network['eth0'][2]
+        packetin = network['eth0'][3]
+        displayin = int((packetin - self.priorin) * 8.0/100.0)
+        displayout = int((packetout - self.priorout) * 8.0/100.0)
+        self.display.clear()
+        bars = Image.new('1', (8, 8))
+        draw = ImageDraw.Draw(bars)
+        draw.rectangle([0,7,3,8-displayin],fill=255)
+        draw.rectangle([4,7,7,8-displayout],fill=255)
+        self.display.set_image(bars)
+        self.display.write_display()
+
 
     def writeline(self, linevalues, minscalevalue, maxscalevalue):
         points = len(linevalues)
