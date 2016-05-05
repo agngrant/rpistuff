@@ -142,18 +142,22 @@ class LoadThread(threading.Thread):
         self.display.write_display()
 
     def writeNetwork(self, network):
-        packetout = network['eth0'][2]
-        packetin = network['eth0'][3]
-        displayin = int((packetin - self.priorin) * 8.0/100.0)
-        displayout = int((packetout - self.priorout) * 8.0/100.0)
+        packetout = network['eth0'][0]
+        packetin = network['eth0'][1]
+        displayin = int((packetin - self.priorin) * 8.0/1000.0)
+        displayout = int((packetout - self.priorout) * 8.0/1000.0)
+        #print "%s %s %s %s %s %s" % (packetin, packetout, displayin, displayout, self.priorin, self.priorout)
+        self.priorin = packetin
+        self.priorout = packetout
         self.display.clear()
         bars = Image.new('1', (8, 8))
         draw = ImageDraw.Draw(bars)
-        draw.rectangle([0,7,3,8-displayin],fill=255)
-        draw.rectangle([4,7,7,8-displayout],fill=255)
+        if displayin > 0:
+            draw.rectangle([0,7,3,8-displayin],fill=255)
+        if displayout > 0:
+            draw.rectangle([4,7,7,8-displayout],fill=255)
         self.display.set_image(bars)
         self.display.write_display()
-
 
     def writeline(self, linevalues, minscalevalue, maxscalevalue):
         points = len(linevalues)
