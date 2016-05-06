@@ -111,9 +111,55 @@ class LoadThread(threading.Thread):
                 network = psutil.net_io_counters(pernic=True)
                 self.writeNetwork(network)
                 time.sleep(1)
+            if self.metric == 5:
+                cpupercent = psutil.cpu_percent(interval=1, percpu=True)
+                temp = self.get_temperature()
+                self.temp.popleft()
+                self.temp.append(temp)
+                network = psutil.net_io_counters(pernic=True)
+                memory = psutil.virtual_memory()
+                self.writeMultiMetric(cpupercent, temp,self.mintemp, self.maxtemp,network,memory)
+
             # print " Load average: %.2f %.2f %.2f " % (av1, av2, av3)
             loop = loop + 1
             # time.sleep(1)
+
+    
+    def writeMultiMetric(self, cpupercent, temp, tempmin,tempmax,network,memory):
+
+        cpus = len(cpupercent)
+        width = 4 / cpus
+        perVal = [int(round(x * 8.0 / 100.0)) for x in cpupercent]
+        # print loadVal
+        self.display.clear()
+        bars = Image.new('1', (8, 8))
+        draw = ImageDraw.Draw(bars)
+        # print cpupercent
+        # print perVal
+        for cpu in range(cpus):
+            draw = ImageDraw.Draw(bars)
+            if perVal[cpu] > 0:
+                draw.line((0 + (width * cpu),
+                           7, 0 + (width * cpu), 8 - perVal[cpu]), fill=255)
+            else:
+                draw.line((0 + (width * cpu),
+                           7, 0 + (width * cpu), 8 - perVal[cpu]), fill=0)
+        packetout = network['eth0'][0]
+        packetin = network['eth0'][1]
+        displayin = int((packetin - self.priorin) * 8.0/10000.0)
+        displayout = int((packetout - self.priorout) * 8.0/10000.0)
+        self.priorin = packetin
+        self.priorout = packetout
+        if displayin > 0:
+            draw.line(4,7,4,8-displayin,fill=255)
+        if displayout > 0:
+            draw.line(5,7,4,8-displayout,fill=255)
+        memorydisp = int(round(memory[2] * 8.0 / 100.0))
+        draw.line(6,7,6,8-memorydisp,fill=255)
+        tempdisp = int(round(temp * 8.0 / 100.0))
+        draw.line(7,7,7,8-tempdisp,fill=255)
+        self.display.set_image(bars)
+        self.display.write_display()
 
     def writeCpus(self, cpupercent):
 
