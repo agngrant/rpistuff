@@ -151,13 +151,13 @@ class LoadThread(threading.Thread):
         self.priorin = packetin
         self.priorout = packetout
         if displayin > 0:
-            draw.line(4,7,4,8-displayin,fill=255)
+            draw.line((4,7,4,8-displayin),fill=255)
         if displayout > 0:
-            draw.line(5,7,4,8-displayout,fill=255)
+            draw.line((5,7,4,8-displayout),fill=255)
         memorydisp = int(round(memory[2] * 8.0 / 100.0))
-        draw.line(6,7,6,8-memorydisp,fill=255)
+        draw.line((6,7,6,8-memorydisp),fill=255)
         tempdisp = int(round(temp * 8.0 / 100.0))
-        draw.line(7,7,7,8-tempdisp,fill=255)
+        draw.line((7,7,7,8-tempdisp),fill=255)
         self.display.set_image(bars)
         self.display.write_display()
 
