@@ -1,4 +1,4 @@
- -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """ DisplayThread Class
 
 This module contains the DisplayThread class and
