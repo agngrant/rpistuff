@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+ -*- coding: utf-8 -*-
 """ DisplayThread Class
 
 This module contains the DisplayThread class and
@@ -28,12 +28,15 @@ import os
 import sys
 import time
 import threading
-import Image
-import ImageDraw
+from PIL import Image
+from PIL import ImageDraw
 import psutil
 import subprocess
-from Adafruit_LED_Backpack import Matrix8x8
 from collections import deque
+import board
+import busio
+
+from adafruit_ht16k33 import matrix
 
 
 class LoadThread(threading.Thread):
@@ -92,6 +95,7 @@ class LoadThread(threading.Thread):
             # av1, av2, av3 = os.getloadavg()
             if self.metric == 0:
                 cpupercent = psutil.cpu_percent(interval=1, percpu=True)
+                print(cpupercent)
                 self.writeCpus(cpupercent)
             if self.metric == 1:
                 av1, av2, av3 = os.getloadavg()
@@ -131,7 +135,8 @@ class LoadThread(threading.Thread):
         width = 4 / cpus
         perVal = [int(round(x * 8.0 / 100.0)) for x in cpupercent]
         # print loadVal
-        self.display.clear()
+        self.display.fill(0)
+        self.display.show()
         bars = Image.new('1', (8, 8))
         draw = ImageDraw.Draw(bars)
         # print cpupercent
@@ -158,8 +163,8 @@ class LoadThread(threading.Thread):
         draw.line((6,7,6,8-memorydisp),fill=255)
         tempdisp = int(round(temp * 8.0 / 100.0))
         draw.line((7,7,7,8-tempdisp),fill=255)
-        self.display.set_image(bars)
-        self.display.write_display()
+        self.display.image(bars)
+        self.display.show()
 
     def writeCpus(self, cpupercent):
 
@@ -167,7 +172,9 @@ class LoadThread(threading.Thread):
         width = 8 / cpus
         perVal = [int(round(x * 8.0 / 100.0)) for x in cpupercent]
         # print loadVal
-        self.display.clear()
+        self.display.fill(0)
+        self.display.show()
+
         bars = Image.new('1', (8, 8))
         draw = ImageDraw.Draw(bars)
         # print cpupercent
@@ -184,8 +191,8 @@ class LoadThread(threading.Thread):
                            7, 0 + (width * cpu), 8 - perVal[cpu]), fill=0)
                 draw.line((1 + (width * cpu),
                            7, 1 + (width * cpu), 8 - perVal[cpu]), fill=0)
-        self.display.set_image(bars)
-        self.display.write_display()
+        self.display.image(bars)
+        self.display.show()
 
     def writeNetwork(self, network):
         packetout = network['eth0'][0]
@@ -195,28 +202,31 @@ class LoadThread(threading.Thread):
         #print "%s %s %s %s %s %s" % (packetin, packetout, displayin, displayout, self.priorin, self.priorout)
         self.priorin = packetin
         self.priorout = packetout
-        self.display.clear()
+        self.display.fill(0)
+        self.display.show()
+
         bars = Image.new('1', (8, 8))
         draw = ImageDraw.Draw(bars)
         if displayin > 0:
             draw.rectangle([0,7,2,8-displayin],fill=255)
         if displayout > 0:
             draw.rectangle([5,7,7,8-displayout],fill=255)
-        self.display.set_image(bars)
-        self.display.write_display()
+        self.display.image(bars)
+        self.display.show()
 
     def writeline(self, linevalues, minscalevalue, maxscalevalue):
         points = len(linevalues)
         perVal = [int(round(x * 8.0 / (maxscalevalue - minscalevalue)))
                   for x in linevalues]
-        self.display.clear()
+        self.display.fill(0)
+        self.display.show()
         bars = Image.new('1', (8, 8))
         draw = ImageDraw.Draw(bars)
         for point in range(points):
             draw = ImageDraw.Draw(bars)
             draw.point([point, 8 - perVal[point]], fill=255)
-        self.display.set_image(bars)
-        self.display.write_display()
+        self.display.image(bars)
+        self.display.show()
 
     def get_temperature(self):
         try:
@@ -232,19 +242,22 @@ class LoadThread(threading.Thread):
         loadVal = int(round(averageLoad * 16.0))
         # print loadVal
         if loadVal > 0:
-            self.display.clear()
+            self.display.fill(0)
+            self.display.show()
             current = 1
             for x in range(8):
                 for y in range(7, -1, -1):
                     if current <= loadVal:
                         self.display.set_pixel(x, y, 1)
                     current = current + 1
-            self.display.write_display()
+            self.display.show()
         else:
-            self.display.clear()
-            self.display.set_image(self.images[self.current])
+            self.display.fill(0)
+            self.display.show()
+
+            self.display.image(self.images[self.current])
             self.current = not self.current
-            self.display.write_display()
+            self.display.show()
 
     def stopthread(self):
         """ Called to stop the thread by setting stopcond to true."""
@@ -253,10 +266,11 @@ class LoadThread(threading.Thread):
 
 if __name__ == "__main__":
     # Initialise Display and thread.
-    displays = Matrix8x8.Matrix8x8()
-    displays.begin()
-    displays.clear()
-    displays.write_display()
+    i2c = busio.I2C(board.SCL, board.SDA)
+    displays = matrix.Matrix8x8(i2c)
+    displays.fill(0)
+    displays.brightness = 0.5
+    displays.show()
     thread_watch = LoadThread(False, displays)
     thread_watch.start()
     try:  # Loop until keyboard interrupt
@@ -266,5 +280,10 @@ if __name__ == "__main__":
         thread_watch.stopthread()
     thread_watch.join()
     # Clear display
-    displays.clear()
-    displays.write_display()
+    displays.fill(0)
+    displays.show() 
+
+
+
+
+
