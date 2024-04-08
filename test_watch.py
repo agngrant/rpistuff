@@ -231,7 +231,7 @@ class LoadThread(threading.Thread):
     def get_temperature(self):
         try:
             s = subprocess.check_output(
-                    ['/opt/vc/bin/vcgencmd', 'measure_temp'])
+                    ['/usr/bin/vcgencmd', 'measure_temp'])
             return float(s.split('=')[1][:-3])
         except Exception as inst:
             return 0
