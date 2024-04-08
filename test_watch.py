@@ -232,7 +232,7 @@ class LoadThread(threading.Thread):
         try:
             s = subprocess.check_output(
                     ['/usr/bin/vcgencmd', 'measure_temp'])
-            return float(s.split('=')[1][:-3])
+            return float(s.decode('utf-8').split('=')[1][:-3])
         except Exception as inst:
             return 0
 
